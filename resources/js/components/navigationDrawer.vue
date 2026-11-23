@@ -1,6 +1,6 @@
 <template>
     <div class="nav-shell" :dir="dir" :class="{ 'is-rail': rail }" @mouseleave="scheduleClose">
-        <router-link to="/dashboard" class="nav-logo-link">
+        <router-link to="/dashboard" class="nav-logo-link" @mouseenter="clearHover">
             <img
                 :src="SettingRepository.systemSettings.photo"
                 alt="Logo"
@@ -10,7 +10,7 @@
 
         <div class="nav-scroll" @scroll="syncPanel">
             <section v-for="section in sections" :key="section.label" class="nav-block">
-                <p class="nav-section">{{ section.label }}</p>
+                <p class="nav-section" @mouseenter="clearHover">{{ section.label }}</p>
                 <template v-for="item in section.items" :key="item.id || item.to">
                     <button
                         v-if="item.children"
@@ -23,8 +23,9 @@
                         :data-nav-id="item.id"
                         :aria-expanded="panelId === item.id"
                         @mouseenter="enterParent(item, $event)"
+                        @mouseleave="scheduleClose"
                         @focus="enterParent(item, $event)"
-                        @click="pinParent(item, $event)"
+                        @blur="scheduleClose"
                     >
                         <v-icon v-if="rail" :icon="item.icon" size="22" />
                         <span v-else class="nav-label">{{ item.title }}</span>
@@ -37,6 +38,7 @@
                         :to="item.to"
                         class="nav-row"
                         :class="{ 'is-active': itemActive(item) }"
+                        @mouseenter="clearHover"
                     >
                         <v-icon v-if="rail" :icon="item.icon" size="22" />
                         <span v-else class="nav-label">{{ item.title }}</span>
@@ -46,7 +48,7 @@
         </div>
 
         <div class="nav-drawer-footer">
-            <button type="button" class="nav-profile" @click="dialog = true">
+            <button type="button" class="nav-profile" @click="dialog = true" @mouseenter="clearHover">
                 <v-avatar size="40" color="primaryOld" class="user-avatar">
                     <v-img
                         v-if="showPhoto"
@@ -426,11 +428,10 @@ const itemActive = (item) => {
 };
 
 const hoverId = ref(null);
-const pinnedId = ref(null);
 const panelTop = ref(16);
 let closeTimer = null;
 
-const panelId = computed(() => hoverId.value || pinnedId.value);
+const panelId = computed(() => hoverId.value);
 
 const findGroup = (id) => {
     for (const section of sections.value) {
@@ -471,26 +472,22 @@ const cancelClose = () => {
     clearTimeout(closeTimer);
 };
 
+const clearHover = () => {
+    cancelClose();
+    hoverId.value = null;
+};
+
 const scheduleClose = () => {
     clearTimeout(closeTimer);
     closeTimer = setTimeout(() => {
         hoverId.value = null;
-        if (!pinnedId.value) return;
-        const row = document.querySelector(`[data-nav-id="${pinnedId.value}"]`);
-        const group = findGroup(pinnedId.value);
-        if (row && group) placePanel(row, group.children.length);
-    }, 140);
+    }, 80);
 };
 
 const enterParent = (item, event) => {
     cancelClose();
     hoverId.value = item.id;
     placePanel(event.currentTarget, item.children.length);
-};
-
-const pinParent = (item, event) => {
-    pinnedId.value = item.id;
-    enterParent(item, event);
 };
 
 const syncPanel = () => {
