@@ -192,7 +192,7 @@ const filterFields = [
 import { ref, onMounted, computed } from "vue";
 import AppBar from "../../../components/AppBar.vue";
 import DentalImages from "../../../components/DentalImages.vue";
-import outLabCreatePayment from "./payment/outLabCreatePayment.vue";
+import outLabCreatePayment from "./payment/OutLabCreatePayment.vue";
 import ShowOutLabPayment from "./payment/ShowOutLabPayment.vue";
 import { useI18n } from "vue-i18n";
 const { t, locale } = useI18n();
