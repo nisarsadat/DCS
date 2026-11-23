@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 import laravel from "laravel-vite-plugin";
 import vue from "@vitejs/plugin-vue";
@@ -5,6 +6,7 @@ import Vuetify from "vite-plugin-vuetify";
 
 export default defineConfig(({ mode }) => {
     const standalone = mode === "vercel";
+    const projectRoot = fileURLToPath(new URL(".", import.meta.url));
     const vuePlugin = vue({
         template: {
             transformAssetUrls: {
@@ -15,8 +17,11 @@ export default defineConfig(({ mode }) => {
     });
 
     return {
+        root: standalone ? fileURLToPath(new URL("./vercel", import.meta.url)) : projectRoot,
+        envDir: projectRoot,
         resolve: {
             alias: {
+                "@": fileURLToPath(new URL("./resources/js", import.meta.url)),
                 vue: "vue/dist/vue.esm-bundler.js",
             },
         },
@@ -33,11 +38,8 @@ export default defineConfig(({ mode }) => {
         ...(standalone ? { publicDir: false } : {}),
         build: standalone
             ? {
-                outDir: "dist",
+                outDir: fileURLToPath(new URL("./dist", import.meta.url)),
                 emptyOutDir: true,
-                rollupOptions: {
-                    input: "vercel/index.html",
-                },
             }
             : {
                 chunkSizeWarningLimit: 10000,
