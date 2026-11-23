@@ -41,8 +41,5 @@ class AppServiceProvider extends ServiceProvider
             ]);
         }
 
-        if (config('database.default') === 'pgsql') {
-            DB::statement("SET TIME ZONE 'UTC'");
-        }
     }
 }

@@ -1,8 +1,35 @@
 {
-    "buildCommand": "npm run build:vercel",
-    "outputDirectory": "dist",
+    "version": 2,
+    "buildCommand": "npm run build",
     "framework": null,
-    "rewrites": [
-        { "source": "/(.*)", "destination": "/index.html" }
-    ]
+    "functions": {
+        "api/index.php": {
+            "runtime": "vercel-php@0.7.4",
+            "maxDuration": 60,
+            "excludeFiles": "{node_modules,dist,tests,storage/logs,storage/app/backups}/**"
+        }
+    },
+    "routes": [
+        { "src": "/build/(.*)", "dest": "/public/build/$1" },
+        { "src": "/robots.txt", "dest": "/public/robots.txt" },
+        { "src": "/(.*)", "dest": "/api/index.php" }
+    ],
+    "env": {
+        "APP_ENV": "production",
+        "APP_DEBUG": "false",
+        "APP_URL": "https://dcs-hazel.vercel.app",
+        "LOG_CHANNEL": "stderr",
+        "LOG_LEVEL": "warning",
+        "CACHE_DRIVER": "array",
+        "SESSION_DRIVER": "cookie",
+        "SESSION_SECURE_COOKIE": "true",
+        "VIEW_COMPILED_PATH": "/tmp",
+        "DB_CONNECTION": "pgsql",
+        "DB_SSLMODE": "require",
+        "DB_EMULATE_PREPARES": "false",
+        "CORS_ALLOWED_ORIGINS": "https://dcs-hazel.vercel.app",
+        "CORS_SUPPORTS_CREDENTIALS": "false",
+        "TRUSTED_PROXIES": "*",
+        "MEDIA_DISK": "public"
+    }
 }

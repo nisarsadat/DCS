@@ -19,5 +19,5 @@ Route::get('hi', function(){
 });
 // web.php
 Route::get('/{any}', function () {
-    return view('welcome'); // Replace 'welcome' with your main Blade template
-})->where('any', '.*');
+    return view('welcome');
+})->where('any', '^(?!api(?:/|$)).*');
