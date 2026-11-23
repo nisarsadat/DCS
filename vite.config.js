@@ -35,7 +35,7 @@ export default defineConfig(({ mode }) => {
                 }),
                 Vuetify(),
             ],
-        ...(standalone ? { publicDir: false } : {}),
+        ...(standalone ? { publicDir: fileURLToPath(new URL("./public", import.meta.url)) } : {}),
         build: standalone
             ? {
                 outDir: fileURLToPath(new URL("./dist", import.meta.url)),
