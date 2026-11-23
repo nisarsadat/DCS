@@ -1,0 +1,42 @@
+<?php
+
+use App\Models\Cure;
+use App\Models\Dentist;
+use App\Models\Patient;
+use App\Models\People;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('cures', function (Blueprint $table) {
+            $table->id();
+            $table->foreignIdFor(People::class,'patient_id');
+            $table->foreignIdFor(People::class,'dentist_id');
+            $table->integer('people_account_id');
+            $table->integer('money_account_id');
+            $table->date('start_date');
+            $table->decimal('grand_total',10,2);
+            $table->decimal(Cure::COLUMN_PAID,10,2)->default(0);
+            $table->string('status');
+            $table->string('reference',20)->nullable();
+            $table->text('description')->nullable();
+            $table->softDeletes();
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('cures');
+    }
+};

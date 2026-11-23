@@ -1,0 +1,98 @@
+<?php
+
+
+use App\Models\Expense;
+use App\Enums\PaymentType;
+use App\Enums\OperationType;
+use App\Enums\TransactionType;
+use Illuminate\Support\Facades\DB;
+use App\Models\PeopleAccountTransaction;
+use Illuminate\Database\Migrations\Migration;
+
+class CreateExpenseTriggers extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        if (\App\Database\SchemaDialect::postgres()) {
+            \App\Database\PostgresLedger::installExpenseTriggers();
+
+            return;
+        }
+
+        // Drop existing triggers if they exist
+        DB::unprepared("DROP TRIGGER IF EXISTS after_expense_insert");
+        DB::unprepared("DROP TRIGGER IF EXISTS after_expense_update");
+        DB::unprepared("DROP TRIGGER IF EXISTS after_expense_delete");
+
+        $table = (new Expense())->getTable();
+
+        // Create INSERT trigger
+        DB::unprepared("
+            CREATE TRIGGER after_expense_insert
+            AFTER INSERT ON $table
+            FOR EACH ROW
+            BEGIN
+                CALL InsertMoneyAccountTransaction(
+                    NEW." . Expense::COLUMN_ID . ",
+                    NEW." . Expense::COLUMN_MONEY_ACCOUNT_ID . ",
+                    null,
+                    '" . OperationType::EXPENSE . "',
+                    '" . PaymentType::PAID . "',
+                    NEW." . Expense::COLUMN_AMOUNT . ",
+                    NEW." . Expense::COLUMN_DESCRIPTION . ",
+                    NEW." . Expense::COLUMN_DATE . "
+                );
+            END;
+        ");
+
+        // Create UPDATE trigger
+        DB::unprepared("
+            CREATE TRIGGER after_expense_update
+            AFTER UPDATE ON $table
+            FOR EACH ROW
+            BEGIN
+                CALL UpdateMoneyAccountTransaction(
+                    NEW." . Expense::COLUMN_ID . ",
+                    NEW." . Expense::COLUMN_MONEY_ACCOUNT_ID . ",
+                    null,
+                    '" . OperationType::EXPENSE . "',
+                    '" . PaymentType::PAID . "',
+                    NEW." . Expense::COLUMN_AMOUNT . ",
+                    NEW." . Expense::COLUMN_DESCRIPTION . ",
+                    NEW." . Expense::COLUMN_DATE . ",
+                    NEW.deleted_at
+                );
+            END;
+        ");
+
+        // Create DELETE trigger
+        DB::unprepared("
+            CREATE TRIGGER after_expense_delete
+            AFTER DELETE ON $table
+            FOR EACH ROW
+            BEGIN
+                CALL DeleteMoneyAccountTransaction(OLD.id,'" . OperationType::EXPENSE . "');
+            END;
+        ");
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        if (\App\Database\SchemaDialect::postgres()) {
+            \App\Database\PostgresLedger::dropExpenseTriggers();
+
+            return;
+        }
+
+        // Drop triggers
+        DB::unprepared("DROP TRIGGER IF EXISTS after_expense_insert");
+        DB::unprepared("DROP TRIGGER IF EXISTS after_expense_update");
+        DB::unprepared("DROP TRIGGER IF EXISTS after_expense_delete");
+    }
+}
