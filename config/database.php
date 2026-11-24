@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'default' => str_starts_with(ltrim((string) env('DATABASE_URL'), "\"'"), 'postgres')
+    'default' => str_starts_with(\App\Database\SchemaDialect::normalizePostgresUrl((string) env('DATABASE_URL')), 'postgres')
         ? 'pgsql'
         : env('DB_CONNECTION', 'mysql'),
 
@@ -67,7 +67,7 @@ return [
 
         'pgsql' => [
             'driver' => 'pgsql',
-            'url' => env('DATABASE_URL'),
+            'url' => ($postgresUrl = \App\Database\SchemaDialect::normalizePostgresUrl((string) env('DATABASE_URL'))) !== '' ? $postgresUrl : null,
             'host' => env('DB_PGSQL_HOST', '127.0.0.1'),
             'port' => env('DB_PGSQL_PORT', '5432'),
             'database' => env('DB_PGSQL_DATABASE', 'postgres'),
