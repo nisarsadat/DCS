@@ -26,10 +26,7 @@ class NeonPostgres
         }
         $dsn = "pgsql:host={$host};port={$port};dbname='{$database}';sslmode={$sslmode}";
 
-        $endpoint = self::endpoint($host);
-        if ($endpoint !== null) {
-            $dsn .= ";options='endpoint={$endpoint}'";
-        }
+        
 
         $pdo = new PDO($dsn, (string) ($config['username'] ?? ''), (string) ($config['password'] ?? ''), [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
