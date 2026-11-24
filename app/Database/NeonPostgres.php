@@ -9,10 +9,21 @@ class NeonPostgres
 {
     public static function connect(array $config): PostgresConnection
     {
-        $host = (string) ($config['host'] ?? '127.0.0.1');
+        if (! extension_loaded('pdo_pgsql')) {
+            throw new \RuntimeException('PostgreSQL PDO driver is not available.');
+        }
+
+        $host = (string) ($config['host'] ?? '');
+        if ($host === '') {
+            throw new \InvalidArgumentException('PostgreSQL host is not configured.');
+        }
+
         $port = (string) ($config['port'] ?? '5432');
         $database = str_replace("'", "\\'", (string) ($config['database'] ?? 'postgres'));
-        $sslmode = (string) ($config['sslmode'] ?? 'prefer');
+        $sslmode = (string) ($config['sslmode'] ?? '');
+        if ($sslmode === '' || ($sslmode === 'prefer' && str_contains($host, 'neon.tech'))) {
+            $sslmode = 'require';
+        }
         $dsn = "pgsql:host={$host};port={$port};dbname='{$database}';sslmode={$sslmode}";
 
         $endpoint = self::endpoint($host);

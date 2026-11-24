@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'default' => str_starts_with(\App\Database\SchemaDialect::normalizePostgresUrl((string) env('DATABASE_URL')), 'postgres')
+    'default' => env('APP_ENV') === 'production'
         ? 'pgsql'
         : env('DB_CONNECTION', 'mysql'),
 
@@ -67,18 +67,26 @@ return [
 
         'pgsql' => [
             'driver' => 'pgsql',
-            'url' => ($postgresUrl = \App\Database\SchemaDialect::normalizePostgresUrl((string) env('DATABASE_URL'))) !== '' ? $postgresUrl : null,
-            'host' => env('DB_PGSQL_HOST', '127.0.0.1'),
-            'port' => env('DB_PGSQL_PORT', '5432'),
-            'database' => env('DB_PGSQL_DATABASE', 'postgres'),
-            'username' => env('DB_PGSQL_USERNAME', 'postgres'),
-            'password' => env('DB_PGSQL_PASSWORD', ''),
+            'url' => \App\Database\SchemaDialect::connectionUrl(),
+            'host' => \App\Database\SchemaDialect::postgresHost(),
+            'port' => \App\Database\SchemaDialect::postgresPort(),
+            'database' => \App\Database\SchemaDialect::firstEnv(
+                ['DB_PGSQL_DATABASE', 'PGDATABASE', 'POSTGRES_DATABASE', 'DB_DATABASE'],
+                env('APP_ENV') === 'production' ? 'neondb' : 'postgres'
+            ),
+            'username' => \App\Database\SchemaDialect::firstEnv(
+                ['DB_PGSQL_USERNAME', 'PGUSER', 'POSTGRES_USER', 'DB_USERNAME'],
+                env('APP_ENV') === 'production' ? '' : 'postgres'
+            ),
+            'password' => \App\Database\SchemaDialect::firstEnv(
+                ['DB_PGSQL_PASSWORD', 'PGPASSWORD', 'POSTGRES_PASSWORD', 'DB_PASSWORD']
+            ),
             'charset' => 'utf8',
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => 'public',
-            'sslmode' => env('DB_SSLMODE', 'prefer'),
-            'options' => extension_loaded('pdo_pgsql') && env('DB_EMULATE_PREPARES') ? [
+            'sslmode' => env('APP_ENV') === 'production' ? 'require' : env('DB_SSLMODE', 'prefer'),
+            'options' => extension_loaded('pdo_pgsql') && filter_var(env('DB_EMULATE_PREPARES'), FILTER_VALIDATE_BOOLEAN) ? [
                 PDO::ATTR_EMULATE_PREPARES => true,
             ] : [],
         ],
