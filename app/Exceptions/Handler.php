@@ -26,5 +26,18 @@ class Handler extends ExceptionHandler
         $this->reportable(function (Throwable $e) {
             //
         });
+
+        $this->renderable(function (Throwable $e, $request) {
+            if (! app()->environment('production') || ! $request->is('api/*')) {
+                return null;
+            }
+
+            $message = preg_replace('/postgres(?:ql)?:\/\/\S+/i', 'postgres://redacted', $e->getMessage()) ?? '';
+
+            return response()->json([
+                'error' => class_basename($e),
+                'message' => substr($message, 0, 220),
+            ], 500);
+        });
     }
 }
