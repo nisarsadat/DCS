@@ -31,6 +31,8 @@ class NeonPostgres
 
     public static function endpoint(string $host): ?string
     {
+        $host = preg_replace('/-pooler(?=\.)/', '', $host) ?? $host;
+
         if (preg_match('/^(ep-[a-z0-9-]+)\./i', $host, $matches)) {
             return $matches[1];
         }

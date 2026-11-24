@@ -34,6 +34,11 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
+        $compiledViews = config('view.compiled');
+        if (is_string($compiledViews) && $compiledViews !== '' && ! is_dir($compiledViews)) {
+            mkdir($compiledViews, 0777, true);
+        }
+
         $postgresUrl = config('database.connections.pgsql.url');
         if (is_string($postgresUrl) && str_contains($postgresUrl, 'channel_binding=')) {
             config([
