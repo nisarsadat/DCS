@@ -30,37 +30,4 @@ foreach ([
     $_SERVER[$cacheKey] = $cachePath;
 }
 
-if (isset($_GET['probe'])) {
-    $scheme = 'none';
-    if (preg_match('/^([A-Za-z][A-Za-z0-9+.-]{0,15}):\/\//', $databaseUrl, $schemeMatch)) {
-        $scheme = strtolower($schemeMatch[1]);
-    }
-
-    header('Content-Type: application/json');
-    echo json_encode([
-        'app_key' => trim((string) (getenv('APP_KEY') ?: '')) !== '',
-        'database_url' => $databaseUrl !== '',
-        'postgres' => str_starts_with($databaseUrl, 'postgres'),
-        'scheme' => $scheme,
-        'mentions_postgres' => str_contains(strtolower($databaseUrl), 'postgres'),
-        'mentions_neon' => str_contains($databaseUrl, 'neon.tech'),
-        'mentions_pooler' => str_contains($databaseUrl, 'pooler'),
-        'url_length' => strlen($databaseUrl),
-        'db_connection' => getenv('DB_CONNECTION') ?: null,
-        'cache' => getenv('CACHE_DRIVER') ?: null,
-        'session' => getenv('SESSION_DRIVER') ?: null,
-        'log' => getenv('LOG_CHANNEL') ?: null,
-        'app_env' => getenv('APP_ENV') ?: null,
-        'env_file' => is_file(__DIR__.'/../.env'),
-        'vendor' => is_file(__DIR__.'/../vendor/autoload.php'),
-        'services' => is_file(__DIR__.'/../bootstrap/cache/services.php'),
-        'manifest' => is_file(__DIR__.'/../public/build/manifest.json'),
-        'pdo_pgsql' => extension_loaded('pdo_pgsql'),
-        'storage_writable' => is_writable(__DIR__.'/../storage'),
-        'bootstrap_cache_writable' => is_writable(__DIR__.'/../bootstrap/cache'),
-        'tmp_writable' => is_writable('/tmp'),
-    ]);
-    exit;
-}
-
 require __DIR__.'/../public/index.php';

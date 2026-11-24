@@ -6,7 +6,6 @@ use App\Models\MoneyAccountTransaction;
 use App\Models\Service;
 use App\Models\Laboratory;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CureController;
@@ -56,26 +55,6 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TwoFactorController;
 use App\Models\InboundLab;
 use App\Models\Salary;
-
-Route::get('/health', function () {
-    $url = trim((string) (getenv('DATABASE_URL') ?: ''), " \t\n\r\0\x0B\"'");
-    $status = [
-        'database_url' => $url !== '',
-        'postgres_url' => str_starts_with($url, 'postgres'),
-        'app_key' => trim((string) (getenv('APP_KEY') ?: '')) !== '',
-        'connection' => config('database.default'),
-    ];
-
-    try {
-        DB::select('select 1 as ok');
-        $status['query'] = 'ok';
-    } catch (Throwable $e) {
-        $status['query'] = 'fail';
-        $status['error'] = substr(preg_replace('/postgres(?:ql)?:\/\/\S+/i', 'postgres://redacted', $e->getMessage()) ?? '', 0, 300);
-    }
-
-    return $status;
-});
 
 // Authentication routes
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
